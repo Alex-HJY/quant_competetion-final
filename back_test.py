@@ -42,7 +42,7 @@ class back_test_system:
         money = self.start_money
         cash = 0
         portfolio = {}
-        df = self.df
+        df = pd.DataFrame()
         result = pd.DataFrame()
         day = timedelta(days=1)
         today = start_date
@@ -51,6 +51,7 @@ class back_test_system:
 
         # 按天回测
         while today < end_date:
+            df=df.append(self.df.loc[today])
             money, cash, portfolio = result.append(trade_func(df, today, loc, target, money, cash, portfolio))
             today = today + day
 
