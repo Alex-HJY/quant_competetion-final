@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,69 +9,74 @@ from datetime import datetime
 import trade_funcs
 
 
-def calc_bench(df=pd.DataFrame(), bench_mark='', start_date='', end_date='', start_money=10000):
-    """
-    :param df: 股票日线数据
-    :param bench_mark: 基准列名
-    :param start_date: 起始日期
-    :param end_date: 结束日期
-    :param start_money: 初始金钱
-    :return: 基准收益序列
-    """
-    return df
+class back_test_system:
+    def __init__(self, df=pd.DataFrame(), bench_mark='', start_money=1000000, save_dir=''):
+        self.df = deepcopy(df)
+        self.bench_mark = bench_mark
+        self.start_money = start_money
+        self.save_dir = save_dir
 
+    def calc_bench(self, save_path='', start_date='', end_date=''):
+        """
 
-def back_test_by_day(df=pd.DataFrame(), bench_mark='', target='', start_date='', end_date='', start_money=10000
-                     , trade_func='', save_path=''):
-    """
-    回测函数
-    :param df: 股票日线数据
-    :param bench_mark: 基准列名
-    :param target: 标的名
-    :param start_date: 起始日期
-    :param end_date: 结束日期
-    :param start_money: 初始金钱
-    :param trade_func: 交易函数
-    :param save_path: 保存路径
-    :return: 回测结果
-    """
+        :param end_date:
+        :param save_path:
+        :param start_date:
+        :return:
+        """
+        df = self.df
+        return df
 
-    # 设定初始参数
-    money = start_money
-    cash = 0
-    portfolio = {}
-    df = df
-    result = pd.DataFrame()
-    start_date = parser.parse(start_date)
-    end_date = parser.parse(end_date)
-    day = timedelta(days=1)
-    today = start_date
+    def back_test_by_day(self, strategy_name='', trade_func=function(), save_path='', start_date='', end_date=''):
+        """
 
-    # 按天回测
-    while today < end_date:
-        money, cash, portfolio = result.append(trade_func(df, today, target, money, cash, portfolio))
-        today = today + day
+        :param strategy_name:
+        :param trade_func:
+        :param save_path:
+        :param start_date:
+        :param end_date:
+        :return:
+        """
 
-    # 计算基准收益并整合
-    if bench_mark != '':
-        bench_profit = calc_bench(df, bench_mark, start_date, end_date, start_money)
-        result = result.join(bench_profit)
+        # 设定初始参数
+        money = self.start_money
+        cash = 0
+        portfolio = {}
+        df = self.df
+        result = pd.DataFrame()
+        day = timedelta(days=1)
+        today = start_date
+        bench_mark = self.bench_mark
+        target = self.target
 
-    # 输出文件
-    if save_path != '':
-        result.to_csv(save_path, encoding='utf-8-sig')
-    return result
+        # 按天回测
+        while today < end_date:
+            money, cash, portfolio = result.append(trade_func(df, today, loc, target, money, cash, portfolio))
+            today = today + day
 
+        # 计算基准收益并整合
+        if bench_mark != '':
+            bench_profit = self.calc_bench()
+            result = result.join(bench_profit)
 
-def show_pic(df=pd.DataFrame(), bench_mark='', strategies=[], start_date='', end_date='', start_money=10000):
-    """
-    画图函数
-    :param df: 回测结果数据
-    :param bench_mark: 基准列名
-    :param start_date: 起始日期
-    :param strategies: 策略列名
-    :param end_date: 结束日期
-    :param start_money: 初始金钱
-    :return: None
-    """
-    return None
+        # 输出文件
+        if save_path != '':
+            result.to_csv(save_path, encoding='utf-8-sig')
+        return result
+
+    def show(self, strategies_name=[], start_date='', end_date='',
+             start_money=1000000):
+        """
+
+        :param strategies_name:
+        :param start_date:
+        :param end_date:
+        :param start_money:
+        :return:
+        """
+        df = self.df
+        return None
+
+    def get_indexes(self, strategies_name=[], start_date='', end_date=''):
+        indexes = self.df
+        return indexes

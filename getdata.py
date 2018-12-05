@@ -10,7 +10,6 @@ def get_close_data():
     :return: 不同股票收盘价  DataFrame
     """
     df = pd.DataFrame()
-
     return df
 
 
@@ -23,8 +22,5 @@ def get_period():
     return df
 
 
-
-
 if __name__ == '__main__':
     print(get_close_data())
-
