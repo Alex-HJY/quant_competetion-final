@@ -11,3 +11,9 @@ def trade_lundong(df=pd.DataFrame(), today=datetime.now(),target='',money=0,cash
 
 def trade_ma(df=pd.DataFrame(), today=datetime.now(),target='',money=0,cash=0,portfolio={},ma1=5,ma2=10):
     return money,cash,portfolio
+
+
+
+
+def wrapper():
+    pass
