@@ -28,7 +28,7 @@ class back_test_system:
         计算基本收益率
         :param start_date: 起始日期 datetime
         :param end_date: 结束日期 datetime
-        :return: DataFrame culumns=[cash,money,portfolio]
+        :return: DataFrame, columns = [cash,money,portfolio]
         """
         close_df = self.close_df
         df = pd.DataFrame()
