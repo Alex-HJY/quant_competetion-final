@@ -11,21 +11,43 @@ import trade_funcs
 
 class back_test_system:
     def __init__(self, df=pd.DataFrame(), bench_mark='', start_money=1000000, save_dir=''):
-        self.df = deepcopy(df)
+        self.close_df = deepcopy(df)
         self.bench_mark = bench_mark
         self.start_money = start_money
         self.save_dir = save_dir
 
-    def calc_bench(self, save_path='', start_date='', end_date=''):
+    def calc_bench(self, start_date='', end_date=''):
         """
 
-        :param end_date:
-        :param save_path:
-        :param start_date:
+        :param start_date: 起始日期 datetime
+        :param end_date: 结束日期 datetime
         :return:
         """
-        df = self.df
-        return df
+        close_df = self.close_df
+        df = pd.DataFrame()
+        one_day = timedelta(days=1)
+        date_now = start_date
+        while date_now < end_date:
+            if date_now not in close_df.index:
+                date_now = date_now + one_day
+            else:
+                break
+
+        share = self.start_money / close_df.loc[date_now, self.bench_mark + '_close']
+
+        while date_now < end_date:
+            if date_now in close_df.index:
+                df.append(
+                    pd.DataFrame(
+                        data=[
+                            [share * close_df.loc[date_now, self.bench_mark + '_close'], {self.bench_mark: share}, 0]],
+                        index=[date_now],
+                        columns=[self.bench_mark + '_money', self.bench_mark + '_portfolio',
+                                 self.bench_mark + '_cash']))
+            else:
+                date_now=date_now+one_day
+
+        return close_df
 
     def back_test_by_day(self, strategy_name='', trade_func=function(), save_path='', start_date='', end_date=''):
         """
@@ -51,7 +73,7 @@ class back_test_system:
 
         # 按天回测
         while today < end_date:
-            df=df.append(self.df.loc[today])
+            df = df.append(self.close_df.loc[today])
             money, cash, portfolio = result.append(trade_func(df, today, loc, target, money, cash, portfolio))
             today = today + day
 
@@ -75,9 +97,9 @@ class back_test_system:
         :param start_money:
         :return:
         """
-        df = self.df
+        df = self.close_df
         return None
 
     def get_indexes(self, strategies_name=[], start_date='', end_date=''):
-        indexes = self.df
+        indexes = self.close_df
         return indexes
