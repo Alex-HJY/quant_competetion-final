@@ -21,6 +21,7 @@ class back_test_system:
         self.bench_mark = bench_mark
         self.start_money = start_money
         self.save_dir = save_dir
+        self.result=pd.DataFrame()
 
     def calc_bench(self, start_date='', end_date=''):
         """
@@ -67,15 +68,15 @@ class back_test_system:
         """
 
         # 设定初始参数
-        close_data=self.close_df
+        close_data = self.close_df
         money = self.start_money
         cash = 0
         portfolio = {}
         df_to_today = pd.DataFrame()
         result = pd.DataFrame()
         one_day = timedelta(days=1)
-        start_date=parser.parse(start_date)
-        end_date=parser.parse(end_date)
+        start_date = parser.parse(start_date)
+        end_date = parser.parse(end_date)
         today = start_date
         bench_mark = self.bench_mark
 
@@ -92,25 +93,28 @@ class back_test_system:
             result = result.join(bench_profit)
 
         # 输出文件
-        result.to_csv(self.save_dir+strategy_name+'.csv', encoding='utf-8-sig')
+        result.to_csv(self.save_dir + strategy_name + '.csv', encoding='utf-8-sig')
+        self.result = result
+        return result
 
-
-    def show(self, strategies_name=[], start_date='', end_date='',
-             start_money=1000000):
+    def show(self, strategies_name=[]):
         """
 
         :param strategies_name:
         :param start_date:
         :param end_date:
-        :param start_money:
         :return:
         """
+        df=self.result
         for strategy in strategies_name:
-            df=pd.read_csv(self.save_dir+strategy+'.csv',encoding='utf-8-sig')
-            df.index=pd.DatetimeIndex(df.index)
-        df = self.close_df
+            df = pd.read_csv(self.save_dir + strategy + '.csv', encoding='utf-8-sig')
+            df.index = pd.DatetimeIndex(df.index)
+            plt.plot(df.index, df[strategy + '_money'],label=strategy)
+        plt.plot(df.index,df[self.bench_mark+'_money'],label=self.bench_mark)
+        plt.legend()
+        plt.show()
         return None
 
-    def get_indexes(self, strategies_name=[], start_date='', end_date=''):
+    def get_indexes(self, strategies_name=[]):
         indexes = self.close_df
         return indexes
