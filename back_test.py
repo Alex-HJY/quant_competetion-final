@@ -21,7 +21,7 @@ class back_test_system:
         self.bench_mark = bench_mark
         self.start_money = start_money
         self.save_dir = save_dir
-        self.result=pd.DataFrame()
+        self.result = pd.DataFrame()
 
     def calc_bench(self, start_date='', end_date=''):
         """
@@ -61,7 +61,6 @@ class back_test_system:
 
         :param strategy_name: 策略名称
         :param trade_func: 交易函数，函数参数为close_data, today,  money, cash, portfolio
-        :param save_path: 存储路径
         :param start_date: 起始日期
         :param end_date: 结束日期
         :return: df 包含策略的 CASH,MONEY,PORTFOLIO
@@ -99,18 +98,15 @@ class back_test_system:
 
     def show(self, strategies_name=[]):
         """
-
         :param strategies_name:
-        :param start_date:
-        :param end_date:
         :return:
         """
-        df=self.result
+        df = self.result
         for strategy in strategies_name:
             df = pd.read_csv(self.save_dir + strategy + '.csv', encoding='utf-8-sig')
             df.index = pd.DatetimeIndex(df.index)
-            plt.plot(df.index, df[strategy + '_money'],label=strategy)
-        plt.plot(df.index,df[self.bench_mark+'_money'],label=self.bench_mark)
+            plt.plot(df.index, df[strategy + '_money'], label=strategy)
+        plt.plot(df.index, df[self.bench_mark + '_money'], label=self.bench_mark)
         plt.legend()
         plt.show()
         return None
