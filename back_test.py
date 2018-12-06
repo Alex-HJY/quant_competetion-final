@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from datetime import timedelta
 from dateutil import parser
 from datetime import datetime
-import trade_funcs
 
 
 class back_test_system:
