@@ -112,5 +112,51 @@ class back_test_system:
         return None
 
     def get_indexes(self, strategies_name=[]):
-        indexes = self.close_df
+        df = self.close_df
+        indexes=pd.DataFrame()
+        for name in strategies_name:
+            # 年化收益率
+            r = (df.iloc[-1][name] * 1.0 / df.iloc[0][name]) ** (250 * 1.0 / df[name].__len__()) - 1
+
+            # 回撤
+            d = 0
+            t = df.iloc[0][name]
+            for i in range(1, df[name].__len__()):
+                t = max(t, df.iloc[i][name] * 1.0)
+                d = max(d, 1 - df.iloc[i][name] * 1.0 / t)
+            # sharp
+            rt = []
+            for i in range(df.index[0].year, df.index[-1].year):
+                rt.append((df[str(i)].ix[-1, name] - df[str(i)].ix[0, name]) * 1.0 / df[str(i)].ix[0, name] - 1)
+            rt = np.array(rt)
+            rt = rt * 100
+            sigma = rt.std()
+            sharp = (r - 0.028) * 100 / sigma
+
+            # 胜率
+            win = df[(df[name] - df[name].shift(-1)) > 0][name].count() * 1.0 / df.__len__()
+
+            # beta alpha
+            df[name + '_rtn'] = (df[name] - df[name].shift(-1)) / df[name] * 100
+            df[self.bench_mark + '_rtn'] = (df[self.bench_mark + '_money'] - df[self.bench_mark + '_money'].shift(-1)) / \
+                                           df[self.bench_mark + '_money'] * 100
+
+            beta = df[name + '_rtn'][:-1].cov(df[self.bench_mark + '_rtn'][:-1]) / df[self.bench_mark + '_rtn'][
+                                                                                   :-1].var()
+            alpha = (r - 0.0284) - beta * (
+                    ((df.iloc[-1][self.bench_mark + '_money'] * 1.0 / df.iloc[0][self.bench_mark + '_money']) ** (
+                            250 * 1.0 / df.__len__()) - 1) - 0.0284)
+
+            index = {'策略收益': [str(((df.iloc[-1][name] * 1.0 / df.iloc[0][name])) * 100)],
+                     '基准收益': [str(((df.iloc[-1][self.bench_mark + '_money'] * 1.0 / df.iloc[0][
+                         self.bench_mark + '_money'])) * 100)],
+
+                     '策略收益率': [str(r * 100) + '%'],
+                     '回撤': [str(d * 100) + '%'],
+                     'sharp': [str(sharp)],
+                     '上涨率': [str(win)],
+                     'alpha': [alpha],
+                     'beta': [beta]}
+            index = pd.DataFrame(index)
+        indexes = indexes.append(index)
         return indexes
