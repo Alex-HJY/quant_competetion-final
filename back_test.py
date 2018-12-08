@@ -69,7 +69,7 @@ class back_test_system:
         # 设定初始参数
         close_data = self.close_df
         money = self.start_money
-        cash = 0
+        cash = self.start_money
         portfolio = {}
         df_to_today = pd.DataFrame()
         result = pd.DataFrame()
