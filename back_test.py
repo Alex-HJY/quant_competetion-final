@@ -94,7 +94,7 @@ class back_test_system:
         if bench_mark != '' and (bench_mark+'_money') not in result.columns:
             bench_profit = self.calc_bench(start_date, end_date)
             result = result.join(bench_profit)
-            print(bench_profit)
+            # print(bench_profit)
         # 计算基准收益并整合
 
         # 输出文件
@@ -115,8 +115,7 @@ class back_test_system:
         plt.show()
         return None
 
-    def get_indexes(self, strategies_name=[]):
-        df = self.close_df
+    def get_indexes(self,df, strategies_name=[]):
         indexes = pd.DataFrame()
         for name in strategies_name:
             # 年化收益率
@@ -142,11 +141,12 @@ class back_test_system:
 
             # beta alpha
             df[name + '_rtn'] = (df[name] - df[name].shift(-1)) / df[name] * 100
+
             df[self.bench_mark + '_rtn'] = (df[self.bench_mark + '_money'] - df[self.bench_mark + '_money'].shift(-1)) / \
                                            df[self.bench_mark + '_money'] * 100
-
-            beta = df[name + '_rtn'][:-1].cov(df[self.bench_mark + '_rtn'][:-1]) / df[self.bench_mark + '_rtn'][
-                                                                                   :-1].var()
+            df[name + '_rtn'] = df[name + '_rtn'].map(float)
+            df[self.bench_mark + '_rtn']=df[self.bench_mark + '_rtn'].map(float)
+            beta = df[name + '_rtn'][:-1].cov(df[self.bench_mark + '_rtn'][:-1]) / df[self.bench_mark + '_rtn'][:-1].var()
             alpha = (r - 0.0284) - beta * (
                     ((df.iloc[-1][self.bench_mark + '_money'] * 1.0 / df.iloc[0][self.bench_mark + '_money']) ** (
                             250 * 1.0 / df.__len__()) - 1) - 0.0284)
