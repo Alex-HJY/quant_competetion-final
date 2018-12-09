@@ -40,23 +40,22 @@ class back_test_system:
             else:
                 break
 
-        share = self.start_money / close_df.loc[date_now, self.bench_mark + '_close']
+        share = self.start_money / close_df.loc[date_now, self.bench_mark]
 
         while date_now < end_date:
             if date_now in close_df.index:
                 df = df.append(
                     pd.DataFrame(
                         data=[
-                            [share * close_df.loc[date_now, self.bench_mark + '_close'], {self.bench_mark: share}, 0]],
+                            [share * close_df.loc[date_now, self.bench_mark], {self.bench_mark: share}, 0]],
                         index=[date_now],
                         columns=[self.bench_mark + '_money', self.bench_mark + '_portfolio',
                                  self.bench_mark + '_cash']))
-            else:
-                date_now = date_now + one_day
+            date_now = date_now + one_day
 
         return df
 
-    def back_test_by_day(self, strategy_name='', trade_func=function(), start_date='', end_date=''):
+    def back_test_by_day(self, strategy_name='', trade_func='', start_date='', end_date=''):
         """
 
         :param strategy_name: 策略名称
@@ -72,39 +71,44 @@ class back_test_system:
         cash = self.start_money
         portfolio = {}
         df_to_today = pd.DataFrame()
-        result = pd.DataFrame()
+        result = self.result
         one_day = timedelta(days=1)
         start_date = parser.parse(start_date)
         end_date = parser.parse(end_date)
         today = start_date
         bench_mark = self.bench_mark
 
+        result[strategy_name + '_money'] = ''
+        result[strategy_name + '_cash'] = ''
+        result[strategy_name + '_portfolio'] = ''
         # 按天回测df
         while today < end_date:
             if today in close_data.index:
                 df_to_today = df_to_today.append(close_data.loc[today])
-                money, cash, portfolio = result.append(trade_func(df_to_today, today, money, cash, portfolio))
+                money, cash, portfolio = trade_func(df_to_today, today, money, cash, portfolio)
+                result.loc[today, strategy_name + '_money'] = money
+                result.loc[today, strategy_name + '_cash'] = cash
+                result.loc[today, strategy_name + '_portfolio'] = portfolio.__str__()
             today = today + one_day
 
-        # 计算基准收益并整合
-        if bench_mark != '':
+        if bench_mark != '' and (bench_mark+'_money') not in result.columns:
             bench_profit = self.calc_bench(start_date, end_date)
             result = result.join(bench_profit)
+            print(bench_profit)
+        # 计算基准收益并整合
 
         # 输出文件
-        result.to_csv(self.save_dir + strategy_name + '.csv', encoding='utf-8-sig')
+        # result.to_csv(self.save_dir + strategy_name + '.csv', encoding='utf-8-sig')
         self.result = result
         return result
 
-    def show(self, strategies_name=[]):
+    def show(self, df, strategies_name=[]):
         """
+        :param df:
         :param strategies_name:
         :return:
         """
-        df = self.result
         for strategy in strategies_name:
-            df = pd.read_csv(self.save_dir + strategy + '.csv', encoding='utf-8-sig')
-            df.index = pd.DatetimeIndex(df.index)
             plt.plot(df.index, df[strategy + '_money'], label=strategy)
         plt.plot(df.index, df[self.bench_mark + '_money'], label=self.bench_mark)
         plt.legend()
@@ -113,7 +117,7 @@ class back_test_system:
 
     def get_indexes(self, strategies_name=[]):
         df = self.close_df
-        indexes=pd.DataFrame()
+        indexes = pd.DataFrame()
         for name in strategies_name:
             # 年化收益率
             r = (df.iloc[-1][name] * 1.0 / df.iloc[0][name]) ** (250 * 1.0 / df[name].__len__()) - 1
